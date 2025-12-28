@@ -1,0 +1,13 @@
+midas_dbt:
+  target: duckdb_dev
+  outputs:
+
+    duckdb_dev:
+      type: duckdb
+      path: data/midas_dev.duckdb
+      threads: 4
+
+    duckdb_prod:
+      type: duckdb
+      path: data/midas_prod.duckdb
+      threads: 4
