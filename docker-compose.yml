@@ -1,12 +1,7 @@
-version: "3.9"
 services:
   duckdb_dev:
     image: duckdb/duckdb:latest
     container_name: duckdb_dev
-    environment:
-      POSTGRES_USER: midas
-      POSTGRES_PASSWORD: midas
-      POSTGRES_DB: midas_dev
     ports:
       - "4213"
     volumes:
@@ -14,10 +9,6 @@ services:
   duckdb_prod:
     image: duckdb/duckdb:latest
     container_name: duckdb_prod
-    environment:
-      POSTGRES_USER: midas
-      POSTGRES_PASSWORD: midas
-      POSTGRES_DB: midas_prod
     ports:
       - "4213"
     volumes:
