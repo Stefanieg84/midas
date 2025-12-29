@@ -3,16 +3,62 @@ services:
     image: duckdb/duckdb:latest
     container_name: duckdb_dev
     ports:
-      - "4213"
+      - "4213:4213"
     volumes:
       - duckdb_dev_data:/var/lib/duckdb/data
   duckdb_prod:
     image: duckdb/duckdb:latest
     container_name: duckdb_prod
     ports:
-      - "4213"
+      - "4214:4213"
     volumes:
       - duckdb_prod_data:/var/lib/duckdb/data
+
+  postgres:
+      image: postgres:latest
+      environment:
+        POSTGRES_USER: airflow
+        POSTGRES_PASSWORD: airflow
+        POSTGRES_DB: airflow
+      ports:
+        - "5434:5432"
+      volumes:
+        - ./airflow/postgres-data:/var/lib/postgresql/data
+
+  airflow-api-server:
+      image: apache/airflow:3.1.5
+      env_file:
+        - ./airflow/.env
+      depends_on:
+        - postgres
+      environment:
+        AIRFLOW__CORE__EXECUTOR: LocalExecutor
+        AIRFLOW__CORE__FERNET_KEY: 'pwFDBWUC4X-DyJWUnBZdLwCObwYHK8CnjVPI7WoSJS8='
+        AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
+      volumes:
+        - ./airflow/dags:/opt/dags
+        - ./airflow/logs:/opt/logs
+        - ./airflow/plugins:/opt/plugins
+      ports:
+        - "8081:8080"
+      command: api-server
+
+  airflow-scheduler:
+    image: apache/airflow:3.1.5
+    env_file:
+      - ./airflow/.env
+    depends_on:
+      - postgres
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__CORE__FERNET_KEY: 'pwFDBWUC4X-DyJWUnBZdLwCObwYHK8CnjVPI7WoSJS8='
+      AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
+    volumes:
+      - ./airflow/dags:/opt/dags
+      - ./airflow/logs:/opt/logs
+      - ./airflow/plugins:/opt/plugins
+    command: scheduler
+
 volumes:
   duckdb_dev_data:
   duckdb_prod_data:

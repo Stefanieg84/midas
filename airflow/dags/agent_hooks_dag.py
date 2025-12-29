@@ -1,0 +1,9 @@
+# ingestion_dag.py
+from airflow import DAG
+from airflow.operators.empty import EmptyOperator
+from datetime import datetime
+
+with DAG('agent_hooks', start_date=datetime(2025, 12, 10), schedule_interval='@daily', catchup=False) as dag:
+    start = EmptyOperator(task_id='start')
+    end = EmptyOperator(task_id='end')
+    start >> end
