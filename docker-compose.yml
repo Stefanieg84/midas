@@ -6,6 +6,9 @@ services:
       - "4213:4213"
     volumes:
       - duckdb_dev_data:/var/lib/duckdb/data
+    networks:
+      - midas-net
+
   duckdb_prod:
     image: duckdb/duckdb:latest
     container_name: duckdb_prod
@@ -13,9 +16,11 @@ services:
       - "4214:4213"
     volumes:
       - duckdb_prod_data:/var/lib/duckdb/data
+    networks:
+      - midas-net
 
   postgres:
-      image: postgres:latest
+      image: postgres:15
       environment:
         POSTGRES_USER: airflow
         POSTGRES_PASSWORD: airflow
@@ -23,7 +28,10 @@ services:
       ports:
         - "5434:5432"
       volumes:
-        - ./airflow/postgres-data:/var/lib/postgresql/data
+        - ./airflow/postgres-data:/var/lib/postgresql
+
+      networks:
+        - midas-net
 
   airflow-api-server:
       image: apache/airflow:3.1.5
@@ -40,8 +48,10 @@ services:
         - ./airflow/logs:/opt/logs
         - ./airflow/plugins:/opt/plugins
       ports:
-        - "8081:8080"
+        - "8080:8080"
       command: api-server
+      networks:
+        - midas-net
 
   airflow-scheduler:
     image: apache/airflow:3.1.5
@@ -58,7 +68,13 @@ services:
       - ./airflow/logs:/opt/logs
       - ./airflow/plugins:/opt/plugins
     command: scheduler
+    networks:
+      - midas-net
 
 volumes:
   duckdb_dev_data:
   duckdb_prod_data:
+
+networks:
+  midas-net:
+    driver: bridge
