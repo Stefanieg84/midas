@@ -29,9 +29,46 @@ services:
         - "5434:5432"
       volumes:
         - ./airflow/postgres-data:/var/lib/postgresql
-
       networks:
         - midas-net
+
+  airflow-api-server:
+      image: apache/airflow:3.1.5
+      env_file:
+        - ./airflow/.env
+      depends_on:
+        - postgres
+      environment:
+        AIRFLOW__CORE__EXECUTOR: LocalExecutor
+        AIRFLOW__CORE__FERNET_KEY: ${AIRFLOW__CORE__FERNET_KEY}
+        AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
+      volumes:
+        - ./airflow/dags:/opt/dags
+        - ./airflow/logs:/opt/logs
+        - ./airflow/plugins:/opt/plugins
+      ports:
+        - "8080:8080"
+      command: api-server
+      networks:
+        - midas-net
+
+  airflow-scheduler:
+    image: apache/airflow:3.1.5
+    env_file:
+        - ./airflow/.env
+    depends_on:
+      - postgres
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__CORE__FERNET_KEY: ${AIRFLOW__CORE__FERNET_KEY}
+      AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
+    volumes:
+      - ./airflow/dags:/opt/dags
+      - ./airflow/logs:/opt/logs
+      - ./airflow/plugins:/opt/plugins
+    command: scheduler
+    networks:
+      - midas-net
 
 volumes:
   duckdb_dev_data:
