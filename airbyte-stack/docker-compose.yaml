@@ -1,0 +1,55 @@
+services:
+  airbyte-db:
+    image: postgres:13
+    container_name: airbyte-db
+    environment:
+      POSTGRES_USER: ${DATABASE_USER}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+      POSTGRES_DB: ${DATABASE_DB}
+    volumes:
+      - ./volumes/db:/var/lib/postgresql/data
+    networks:
+      - airbyte-net
+
+  airbyte-temporal:
+    image: temporalio/auto-setup:1.20.2
+    container_name: airbyte-temporal
+    ports:
+      - "7233:7233"
+    environment:
+      - DB=postgresql
+      - DB_PORT=5432
+      - POSTGRES_USER=${DATABASE_USER}
+      - POSTGRES_PWD=${DATABASE_PASSWORD}
+      - POSTGRES_SEEDS=airbyte-db
+    depends_on:
+      - airbyte-db
+    networks:
+      - airbyte-net
+
+  airbyte-server:
+    image: airbyte/server:${AIRBYTE_VERSION}
+    container_name: airbyte-server
+    depends_on:
+      - airbyte-db
+      - airbyte-temporal
+    ports:
+      - "8000:8000"
+    environment:
+      AIRBYTE_ROLE: server
+      AIRBYTE_WORKSPACE_ROOT: ${AIRBYTE_WORKSPACE_ROOT}
+      DATABASE_DB: ${DATABASE_DB}
+      DATABASE_URL: ${DATABASE_URL}
+      DATABASE_PORT: 5432
+      DATABASE_USER: ${DATABASE_USER}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+      TEMPORAL_HOST: airbyte-temporal
+      TEMPORAL_PORT: 7233
+    volumes:
+      - ./volumes/workspace:${AIRBYTE_WORKSPACE_ROOT}
+    networks:
+      - airbyte-net
+
+networks:
+  airbyte-net:
+    name: airbyte-net

@@ -1,0 +1,5 @@
+# Install pre-commit hooks (installs detect-secrets in a virtualenv)
+pre-commit install
+
+# Run detect-secrets manually through pre-commit
+pre-commit run detect-secrets --all-files

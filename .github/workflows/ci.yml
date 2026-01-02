@@ -32,3 +32,14 @@ jobs:
       run: |
         source .midas-venv/bin/activate
         pytest tests/
+    - name: Airflow DAG Validation
+      run: |
+        source .midas-venv/bin/activate
+        python -m airflow dags list
+        python -m airflow dags test ingestion_dag midas_test_run
+    - name: Airflow Start API Server
+      run: |
+        source .midas-venv/bin/activate
+        airflow api-server -p 8080 &
+        sleep 10
+        curl -f http://localhost:8080/

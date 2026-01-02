@@ -1,0 +1,4 @@
+.env
+# Airbyte / Postgres runtime state
+airbyte-stack/volumes/
+**/volumes/
